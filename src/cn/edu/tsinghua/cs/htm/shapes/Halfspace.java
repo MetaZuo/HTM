@@ -24,15 +24,37 @@ public class Halfspace {
 	/**
 	 * Judge if two Halfspaces overlap
 	 * "Overlap" means intersect, contain or identical
+	 * simply speaking, not exclusive
 	 * @param that another Halfspace
 	 * @return true if overlap
 	 */
 	public boolean overlap(Halfspace that) {
+		return (!exclusive(that));
+	}
+	
+	/**
+	 * Judge if two Halfspaces are mutually exclusive
+	 * @param that another Halfspace
+	 * @return true if exclusive
+	 */
+	public boolean exclusive(Halfspace that) {
+		double halfAngularThis = Math.acos(distance);
+		double halfAngularThat = Math.acos(that.distance);
+		double normsRelative = Math.acos(vector.dot(that.vector));
+		return (normsRelative >= halfAngularThis + halfAngularThat);
+	}
+	
+	/**
+	 * Judge if this Halfspace contains another one
+	 * @param that another Halfspace
+	 * @return true if this contains that
+	 */
+	public boolean contains(Halfspace that) {
 		double halfAngularThis = Math.acos(distance);
 		double halfAngularThat = Math.acos(that.distance);
 		double normsRelative = Math.acos(vector.dot(that.vector));
 		
-		return (Math.abs(halfAngularThat - halfAngularThis) >= normsRelative);
+		return (halfAngularThis - halfAngularThat >= normsRelative);
 	}
 	
 	/**
