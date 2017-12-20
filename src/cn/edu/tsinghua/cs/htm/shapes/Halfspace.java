@@ -81,4 +81,11 @@ public class Halfspace {
 		}
 	}
 	
+	@Override
+	public String toString() {
+		String str = "Halfspace: {" + vector.toString() + "; "
+					 + String.format("%.3f}", distance);
+		return str;
+	}
+	
 }
