@@ -20,9 +20,31 @@ public class Convex {
 		vertices = new ArrayList<Cartesian>();
 	}
 	
+	/**
+	 * Input vertices in counter-clockwise order
+	 * Two neighboring vertices will be connected by a great circle arc
+	 * Thus we will build a zero-signed convex
+	 * @param vertices in counter-clockwise order
+	 */
 	public void buildByVertices(Collection<? extends Cartesian> vertices) {
-		this.vertices.addAll(vertices);
-		// TODO calculate halfspaces
+		if (vertices != null) {
+			this.vertices.addAll(vertices);
+			Iterator<? extends Cartesian> iter = vertices.iterator();
+			if (vertices.size() >= 3) {
+				Cartesian first = iter.next();
+				Cartesian prev = first;
+				while (iter.hasNext()) {
+					Cartesian temp = iter.next();
+					Cartesian v = prev.cross(temp);
+					Halfspace halfspace = new Halfspace(v, 0);
+					halfspaces.add(halfspace);
+					prev = temp;
+				}
+				Cartesian v = prev.cross(first);
+				Halfspace halfspace = new Halfspace(v, 0);
+				halfspaces.add(halfspace);
+			}
+		}
 	}
 	
 	public void buildByHalfspaces(Collection<? extends Halfspace> halfspaces) {
@@ -70,6 +92,16 @@ public class Convex {
 			}
 		}
 		return sign;
+	}
+	
+	@Override
+	public String toString() {
+		String str = "Convex: {";
+		for (Halfspace halfspace : halfspaces) {
+			str += "\n    " + halfspace.toString();
+		}
+		str += "\n}";
+		return str;
 	}
 	
 }

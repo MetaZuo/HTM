@@ -64,4 +64,10 @@ public class Cartesian {
 		return new Cartesian(x, y, z);
 	}
 	
+	@Override
+	public String toString() {
+		String str = String.format("Cartesian: (%.3f, %.3f, %.3f)", x, y, z);
+		return str;
+	}
+	
 }
