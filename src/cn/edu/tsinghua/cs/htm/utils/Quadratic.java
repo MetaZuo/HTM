@@ -13,18 +13,40 @@ public class Quadratic {
 	
 	private int numOfRoots;
 	
+	private boolean isQuadratic;
+	
+	private Pair<Double, Double> rootPair;
+	
 	public Quadratic(double a, double b, double c) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
 		delta = b * b - 4 * a * c;
-		if (delta > Constants.epsilon) {
+		isQuadratic = true;
+		if (a < Constants.epsilon && a > -Constants.epsilon) {
+			isQuadratic = false;
+			if (b < Constants.epsilon && b > -Constants.epsilon) {
+				numOfRoots = 0;
+			} else {
+				numOfRoots = 1;
+			}
+		} else if (delta > Constants.epsilon) {
 			numOfRoots = 2;
 		} else if (delta < -Constants.epsilon) {
 			numOfRoots = 0;
 		} else {
 			numOfRoots = 1;
 		}
+		rootPair = null;
+	}
+	
+	/**
+	 * If the equation is actually quadratic
+	 * i. e. a != 0
+	 * @return true if a != 0
+	 */
+	public boolean isQuadratic() {
+		return isQuadratic;
 	}
 	
 	/**
@@ -44,23 +66,27 @@ public class Quadratic {
 	 * @return small root, big root in Pair<Double, Double>
 	 */
 	public Pair<Double, Double> getRoots() {
-		if (a < Constants.epsilon && a > -Constants.epsilon) {
-			if (b < Constants.epsilon && b > -Constants.epsilon) {
-				return new Pair<Double, Double>(Double.NaN, Double.NaN);
-			}
-			double r = - c / b;
-			return new Pair<Double, Double>(r, Double.NaN);
+		if (rootPair != null) {
+			return new Pair<Double, Double>(rootPair);
 		}
-		if (numOfRoots == 2) {
+		if (!isQuadratic) {
+			if (numOfRoots == 0) {
+				rootPair = new Pair<Double, Double>(Double.NaN, Double.NaN);
+			} else {
+				double r = - c / b;
+				rootPair = new Pair<Double, Double>(r, Double.NaN);
+			}
+		} else if (numOfRoots == 2) {
 			double r1 = (- b - Math.sqrt(delta)) / (2 * a);
 			double r2 = (- b + Math.sqrt(delta)) / (2 * a);
-			return new Pair<Double, Double>(r1, r2);
+			rootPair = new Pair<Double, Double>(r1, r2);
 		} else if (numOfRoots == 1) {
 			double r = - b / (2 * a);
-			return new Pair<Double, Double>(r, r);
+			rootPair = new Pair<Double, Double>(r, r);
 		} else {
-			return new Pair<Double, Double>(Double.NaN, Double.NaN);
+			rootPair = new Pair<Double, Double>(Double.NaN, Double.NaN);
 		}
+		return new Pair<Double, Double>(rootPair);
 	}
 
 }
