@@ -41,6 +41,7 @@ public class Cover {
 		listOfInners = new ArrayList<Trixel>();
 		stackOfPartialLists = new Stack<List<Trixel> >();
 		stackOfPartialLists.push(new ArrayList<Trixel>());
+		queue = new LinkedList<Trixel>();
 		currentLevel = 0;
 		previousLevel = 1;
 		
@@ -179,6 +180,22 @@ public class Cover {
 			result.addAll(partialList);
 		}
 		return result;
+	}
+	
+	public static void main(String[] args) {
+		Convex convex = Convex.parseVertices(args);
+		if (convex == null) {
+			System.out.println("Illegal arguments!");
+			return;
+		}
+		Cover cover = new Cover(convex, 3);
+		cover.run();
+		List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
+		System.out.println("Trixels in the coverage:");
+		for (Pair<HTMid, HTMid> pair : pairs) {
+			System.out.println("[" + pair.a.toString() + ", " +
+								pair.b.toString() + "]");
+		}
 	}
 	
 }
