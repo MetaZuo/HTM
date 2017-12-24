@@ -123,4 +123,25 @@ public class Convex {
 		return str;
 	}
 	
+	public static Convex parseVertices(String[] args) {
+		Convex convex = new Convex();
+		if (args.length < 3) {
+			return null;
+		}
+		List<Cartesian> vertices = new LinkedList<Cartesian>();
+		for (String arg : args) {
+			String[] xyzStr = arg.split(",");
+			if (xyzStr.length != 3) {
+				return null;
+			}
+			double[] xyzDouble = new double[3];
+			for (int i = 0; i < 3; i++) {
+				xyzDouble[i] = Double.parseDouble(xyzStr[i]);
+			}
+			vertices.add(new Cartesian(xyzDouble[0], xyzDouble[1], xyzDouble[2]));
+		}
+		convex.buildByVertices(vertices);
+		return convex;
+	}
+	
 }
