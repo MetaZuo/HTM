@@ -16,8 +16,8 @@ public class Convex {
 	List<Cartesian> vertices;
 	
 	public Convex() {
-		halfspaces = new ArrayList<Halfspace>();
-		vertices = new ArrayList<Cartesian>();
+		halfspaces = new LinkedList<Halfspace>();
+		vertices = new LinkedList<Cartesian>();
 	}
 	
 	/**
@@ -43,6 +43,10 @@ public class Convex {
 				Cartesian v = prev.cross(first);
 				Halfspace halfspace = new Halfspace(v, 0);
 				halfspaces.add(halfspace);
+				
+				if (getSign() == Sign.Positive) {
+					smallestFirst();
+				}
 			}
 		}
 	}
@@ -92,6 +96,21 @@ public class Convex {
 			}
 		}
 		return sign;
+	}
+	
+	private void smallestFirst() {
+		// Get the smallest Halfspace
+		Halfspace smallestHalfspace = halfspaces.get(0);
+		double maxDistance = smallestHalfspace.distance;
+		for (Halfspace halfspace : halfspaces) {
+			double distance = halfspace.distance;
+			if (distance > maxDistance) {
+				smallestHalfspace = halfspace;
+				maxDistance = distance;
+			}
+		}
+		halfspaces.remove(smallestHalfspace);
+		halfspaces.add(0, smallestHalfspace);
 	}
 	
 	@Override
