@@ -16,8 +16,8 @@ public class Convex {
 	List<Cartesian> vertices;
 	
 	public Convex() {
-		halfspaces = new ArrayList<Halfspace>();
-		vertices = new ArrayList<Cartesian>();
+		halfspaces = new LinkedList<Halfspace>();
+		vertices = new LinkedList<Cartesian>();
 	}
 	
 	/**
@@ -43,6 +43,10 @@ public class Convex {
 				Cartesian v = prev.cross(first);
 				Halfspace halfspace = new Halfspace(v, 0);
 				halfspaces.add(halfspace);
+				
+				if (getSign() == Sign.Positive) {
+					smallestFirst();
+				}
 			}
 		}
 	}
@@ -94,6 +98,21 @@ public class Convex {
 		return sign;
 	}
 	
+	private void smallestFirst() {
+		// Get the smallest Halfspace
+		Halfspace smallestHalfspace = halfspaces.get(0);
+		double maxDistance = smallestHalfspace.distance;
+		for (Halfspace halfspace : halfspaces) {
+			double distance = halfspace.distance;
+			if (distance > maxDistance) {
+				smallestHalfspace = halfspace;
+				maxDistance = distance;
+			}
+		}
+		halfspaces.remove(smallestHalfspace);
+		halfspaces.add(0, smallestHalfspace);
+	}
+	
 	@Override
 	public String toString() {
 		String str = "Convex: {";
@@ -102,6 +121,27 @@ public class Convex {
 		}
 		str += "\n}";
 		return str;
+	}
+	
+	public static Convex parseVertices(String[] args) {
+		Convex convex = new Convex();
+		if (args.length < 3) {
+			return null;
+		}
+		List<Cartesian> vertices = new LinkedList<Cartesian>();
+		for (String arg : args) {
+			String[] xyzStr = arg.split(",");
+			if (xyzStr.length != 3) {
+				return null;
+			}
+			double[] xyzDouble = new double[3];
+			for (int i = 0; i < 3; i++) {
+				xyzDouble[i] = Double.parseDouble(xyzStr[i]);
+			}
+			vertices.add(new Cartesian(xyzDouble[0], xyzDouble[1], xyzDouble[2]));
+		}
+		convex.buildByVertices(vertices);
+		return convex;
 	}
 	
 }

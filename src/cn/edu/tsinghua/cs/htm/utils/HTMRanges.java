@@ -75,25 +75,26 @@ public class HTMRanges {
 		if (!iter.hasNext()) {
 			return;
 		}
-		Pair<HTMid, HTMid> prev = iter.next();
+		Pair<HTMid, HTMid> first = iter.next();
+		long lowerBound = first.a.hid;
+		long higherBound = first.b.hid;
 		while (iter.hasNext()) {
 			Pair<HTMid, HTMid> now = iter.next();
-			if (prev.b.hid >= now.a.hid) {
-				Pair<HTMid, HTMid> merged = new Pair<HTMid, HTMid>(prev.a, now.b);
-				newList.add(merged);
-				if (iter.hasNext()) {
-					prev = iter.next();
-				} else {
-					prev = null;
-				}
+			if (higherBound >= now.a.hid - 1) {
+				higherBound = now.b.hid;
 			} else {
-				newList.add(prev);
-				prev = now;
+				Pair<HTMid, HTMid> newPair = new Pair<HTMid, HTMid>(
+						new HTMid(lowerBound),
+						new HTMid(higherBound));
+				newList.add(newPair);
+				lowerBound = now.a.hid;
+				higherBound = now.b.hid;
 			}
 		}
-		if (prev != null) {
-			newList.add(prev);
-		}
+		Pair<HTMid, HTMid> newPair = new Pair<HTMid, HTMid>(
+				new HTMid(lowerBound),
+				new HTMid(higherBound));
+		newList.add(newPair);
 		pairList = newList;
 	}
 
