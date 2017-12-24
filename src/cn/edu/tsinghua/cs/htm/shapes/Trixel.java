@@ -6,7 +6,6 @@ import cn.edu.tsinghua.cs.htm.utils.Constants;
 import cn.edu.tsinghua.cs.htm.utils.HTMid;
 import cn.edu.tsinghua.cs.htm.utils.Markup;
 import cn.edu.tsinghua.cs.htm.utils.Pair;
-import cn.edu.tsinghua.cs.htm.utils.Quadratic;
 import cn.edu.tsinghua.cs.htm.utils.Sign;
 
 /**
@@ -103,77 +102,103 @@ public class Trixel {
 			}
 		}
 		
-		// Get the smallest Halfspace
-		Halfspace smallestHalfspace = convex.halfspaces.get(0);
-		double maxDistance = smallestHalfspace.distance;
+		// The smallest Halfspace is put at first when constructing convex
 		for (Halfspace halfspace : convex.halfspaces) {
-			double distance = halfspace.distance;
-			if (distance > maxDistance) {
-				smallestHalfspace = halfspace;
-				maxDistance = distance;
+			// Are there any intersection between
+			// any edge and any Halfspace
+			boolean anyIntersection = false;
+			
+			// Check 3 edges
+			for (int i = 0; i < 3; i++) {
+				Arc arc = arcs[i];
+				ArcInterHS intersect = arc.intersectHalfspace(halfspace);
+				
+				// This edge intersects with this halfspace
+				if (intersect.hasIntersection()) {
+					anyIntersection = true;
+					
+					Pair<Cartesian, Cartesian> intersections =
+							intersect.getIntersections();
+					
+					// If a good intersection, i.e. in all other Halfspaces 
+					// then Partial
+					if (intersections.a != null) {
+						boolean insideAllOthers = true;
+						for (Halfspace another : convex.halfspaces) {
+							if (another != halfspace &&
+									!another.contains(intersections.a)) {
+								insideAllOthers = false;
+								break;
+							}
+						}
+						if (insideAllOthers) {
+							return Markup.Partial;
+						}
+					}
+					
+					// Same as above
+					if (intersections.b != null) {
+						boolean insideAllOthers = true;
+						for (Halfspace another : convex.halfspaces) {
+							if (another != halfspace &&
+									!another.contains(intersections.b)) {
+								insideAllOthers = false;
+								break;
+							}
+						}
+						if (insideAllOthers) {
+							return Markup.Partial;
+						}
+					}
+					
+					// Here, both intersections are bad
+					// No hurry, we will check the next edge
+				}
+				
+				// Here, perhaps this edge doesn't intersect with Halfspace
+				// Also we will check the next edge
 			}
+			
+			// All 3 edges are checked
+			// If no intersections with the Halfspace
+			// then 2 possibilities:
+			// 1) Trixel inside Halfspace
+			//    can't judge if intersects with convex
+			//    we continue to next Halfspace
+			// 2) Trixel outside Halfspace or contains it
+			if (!anyIntersection) {
+				boolean inside = false;
+				for (int i = 0; i < 3; i++) {
+					if (halfspace.contains(this.v[i])) {
+						inside = true;
+						break;
+					}
+				}
+				if (!inside) {
+					// Check containing
+					for (Cartesian vertex : convex.vertices) {
+						if (this.contains(vertex)) {
+							return Markup.Partial;
+						}
+					}
+					// not containing, then Outside
+					return Markup.Outside;
+				}
+				// Trixel inside Halfspace, continue
+			}
+			// Or there are intersections but all bad
+			// Too difficult to decide, so we also continue
 		}
 		
-		// Find an arc intersecting with the smallest Halfspace
-		// if there is one
-		Arc arcIntersect = null;
-		for (int i = 0; i < 3; i++) {
-			Arc arc = arcs[i];
-			
-			Quadratic quadratic = arc.intersectHalfspace(smallestHalfspace);
-			
-			if (quadratic.numOfRoots() == 2) {
-				Pair<Double, Double> roots = quadratic.getRoots();
-				double r1 = roots.a, r2 = roots.b;
-				if (r1 > Constants.epsilon && r1 < 1 - Constants.epsilon ||
-					r2 > Constants.epsilon && r2 < 1 - Constants.epsilon) {
-					arcIntersect = arc;
-					break;
-				}
-			}
-			
-		}
-		
-		// There is one arc intersecting with the smallest Halfspace
-		// and there exists at least a root in range(0, 1)
-		// in other words, the intersection(s) is on the edge of Trixel
-		// Then we judge if it is a good intersection
-		// that is, on the constraint of the convex
-		// If so, Partial.
-		if (arcIntersect != null) {
-			boolean intersectAll = true;
-			for (Halfspace halfspace : convex.halfspaces) {
-				if (halfspace == smallestHalfspace) {
-					continue;
-				}
-				// If the intersection(s) is a good one,
-				// then for all other bigger Halfspaces,
-				// they should all have two roots with the arc's big circle
-				Quadratic quadratic = arcIntersect.intersectHalfspace(halfspace);
-				if (quadratic.numOfRoots() != 2) {
-					intersectAll = false;
-					break;
-				}
-			}
-			// Good intersection(s)
-			if (intersectAll) {
-				return Markup.Partial;
-			}
-		}
-		
-		// Late to this stage, the only possibilities are
-		// 1) The convex is inside the Trixel
-		// 2) Outside but near (bounding circle overlaps with convex)
+		// All Halfspaces are checked
+		// No good intersection
+		// Perhaps Trixel containing convex but has bad intersections
+		// or completely outside
 		for (Cartesian vertex : convex.vertices) {
-			// case 1)
-			// Actually all vertices should be in Trixel
-			// Just in case of double's precision problem
 			if (this.contains(vertex)) {
 				return Markup.Partial;
 			}
 		}
-		
-		// case 2)
 		return Markup.Outside;
 	}
 	
@@ -201,15 +226,9 @@ public class Trixel {
 			for (int i = 0; i < 3; i++) {
 				Arc arc = arcs[i];
 				for (Halfspace halfspace : convex.halfspaces) {
-					Quadratic quadratic = arc.intersectHalfspace(halfspace);
-					if (quadratic.numOfRoots() == 2) {
-						Pair<Double, Double> roots = quadratic.getRoots();
-						double r1 = roots.a;
-						double r2 = roots.b;
-						if (r1 > Constants.epsilon && r1 < 1 - Constants.epsilon ||
-							r2 > Constants.epsilon && r2 < 1 - Constants.epsilon) {
-							return Markup.Partial;
-						}	
+					ArcInterHS intersect = arc.intersectHalfspace(halfspace);
+					if (intersect.hasIntersection()) {
+						return Markup.Partial;
 					}
 				}
 			}
@@ -226,15 +245,9 @@ public class Trixel {
 			for (int i = 0; i < 3; i++) {
 				Arc arc = arcs[i];
 				for (Halfspace halfspace : convex.halfspaces) {
-					Quadratic quadratic = arc.intersectHalfspace(halfspace);
-					if (quadratic.numOfRoots() == 2) {
-						Pair<Double, Double> roots = quadratic.getRoots();
-						double r1 = roots.a;
-						double r2 = roots.b;
-						if (r1 > Constants.epsilon && r1 < 1 - Constants.epsilon ||
-							r2 > Constants.epsilon && r2 < 1 - Constants.epsilon) {
-							return Markup.Partial;
-						}	
+					ArcInterHS intersect = arc.intersectHalfspace(halfspace);
+					if (intersect.hasIntersection()) {
+						return Markup.Partial;
 					}
 				}
 			}
@@ -259,15 +272,9 @@ public class Trixel {
 			for (int i = 0; i < 3; i++) {
 				Arc arc = arcs[i];
 				for (Halfspace halfspace : convex.halfspaces) {
-					Quadratic quadratic = arc.intersectHalfspace(halfspace);
-					if (quadratic.numOfRoots() == 2) {
-						Pair<Double, Double> roots = quadratic.getRoots();
-						double r1 = roots.a;
-						double r2 = roots.b;
-						if (r1 > Constants.epsilon && r1 < 1 - Constants.epsilon ||
-							r2 > Constants.epsilon && r2 < 1 - Constants.epsilon) {
-							return Markup.Partial;
-						}	
+					ArcInterHS intersect = arc.intersectHalfspace(halfspace);
+					if (intersect.hasIntersection()) {
+						return Markup.Partial;
 					}
 				}
 			}
@@ -323,15 +330,9 @@ public class Trixel {
 		// If Halfspace intersects any side, then partial
 		for (int i = 0; i < 3; i++) {
 			Arc arc = arcs[i];
-			Quadratic quadratic = arc.intersectHalfspace(halfspace);
-			if (quadratic.numOfRoots() == 2) {
-				Pair<Double, Double> roots = quadratic.getRoots();
-				double r1 = roots.a;
-				double r2 = roots.b;
-				if (r1 > Constants.epsilon && r1 < 1 - Constants.epsilon ||
-					r2 > Constants.epsilon && r2 < 1 - Constants.epsilon) {
-					return Markup.Partial;
-				}
+			ArcInterHS intersect = arc.intersectHalfspace(halfspace);
+			if (intersect.hasIntersection()) {
+				return Markup.Partial;
 			}
 		}
 		
