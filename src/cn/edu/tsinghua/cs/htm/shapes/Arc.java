@@ -2,7 +2,6 @@ package cn.edu.tsinghua.cs.htm.shapes;
 
 import cn.edu.tsinghua.cs.htm.shapes.Cartesian;
 import cn.edu.tsinghua.cs.htm.shapes.Halfspace;
-import cn.edu.tsinghua.cs.htm.utils.Quadratic;
 
 /**
  * Spherical arc
@@ -25,24 +24,12 @@ public class Arc {
 	
 	/**
 	 * Intersect an Arc with a Halfspace
-	 * Returns an object of Quadratic - a quadratic equation
-	 * Note that the roots might not be actual intersections "on" the edge
-	 * Only roots in range (0, 1) are between the two terminals of the arc
-	 * while others are on the extending great circle
+	 * Returns an object of ArcInterHS: functional class of intersecting
 	 * @param halfspace
-	 * @return object of Quadratic
+	 * @return object of ArcInterHS
 	 */
-	public Quadratic intersectHalfspace(Halfspace halfspace) {
-		double uSquare = (1 - cosAngular) / (1 + cosAngular);
-		double gamma1 = halfspace.vector.dot(v1);
-		double gamma2 = halfspace.vector.dot(v2);
-		
-		double a = -uSquare * (gamma1 + halfspace.distance);
-		double b = gamma1 * (uSquare - 1) + gamma2 * (uSquare + 1);
-		double c = gamma1 - halfspace.distance;
-		
-		Quadratic quadratic = new Quadratic(a, b, c);
-		return quadratic;
+	public ArcInterHS intersectHalfspace(Halfspace halfspace) {
+		return new ArcInterHS(this, halfspace);
 	}
 
 }
