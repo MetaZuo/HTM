@@ -68,10 +68,13 @@ public class Trixel {
 		case Positive:
 		case Zero:
 			markup = getMarkupPositive(convex);
+			break;
 		case Negative:
 			markup = getMarkupNegative(convex);
+			break;
 		case Mixed:
 			markup = getMarkupMixed(convex);
+			break;
 		}
 		return markup;
 	}
@@ -126,7 +129,7 @@ public class Trixel {
 						boolean insideAllOthers = true;
 						for (Halfspace another : convex.halfspaces) {
 							if (another != halfspace &&
-									!another.contains(intersections.a)) {
+									!another.containsLoose(intersections.a)) {
 								insideAllOthers = false;
 								break;
 							}
@@ -141,7 +144,7 @@ public class Trixel {
 						boolean insideAllOthers = true;
 						for (Halfspace another : convex.halfspaces) {
 							if (another != halfspace &&
-									!another.contains(intersections.b)) {
+									!another.containsLoose(intersections.b)) {
 								insideAllOthers = false;
 								break;
 							}
@@ -169,17 +172,21 @@ public class Trixel {
 			if (!anyIntersection) {
 				boolean inside = false;
 				for (int i = 0; i < 3; i++) {
-					if (halfspace.contains(this.v[i])) {
+					if (halfspace.containsStrict(this.v[i])) {
 						inside = true;
 						break;
 					}
 				}
 				if (!inside) {
 					// Check containing
-					for (Cartesian vertex : convex.vertices) {
-						if (this.contains(vertex)) {
-							return Markup.Partial;
-						}
+					Cartesian vertex0 = convex.vertices.get(0);
+					Cartesian vertex1 = convex.vertices.get(1);
+					Cartesian vertex2 = convex.vertices.get(2);
+					Cartesian middle1 = Cartesian.getMiddle(vertex0, vertex1);
+					Cartesian middle2 = Cartesian.getMiddle(vertex1, vertex2);
+					Cartesian pointInside = Cartesian.getMiddle(middle1, middle2);
+					if (this.contains(pointInside)) {
+						return Markup.Partial;
 					}
 					// not containing, then Outside
 					return Markup.Outside;
@@ -194,10 +201,14 @@ public class Trixel {
 		// No good intersection
 		// Perhaps Trixel containing convex but has bad intersections
 		// or completely outside
-		for (Cartesian vertex : convex.vertices) {
-			if (this.contains(vertex)) {
-				return Markup.Partial;
-			}
+		Cartesian vertex0 = convex.vertices.get(0);
+		Cartesian vertex1 = convex.vertices.get(1);
+		Cartesian vertex2 = convex.vertices.get(2);
+		Cartesian middle1 = Cartesian.getMiddle(vertex0, vertex1);
+		Cartesian middle2 = Cartesian.getMiddle(vertex1, vertex2);
+		Cartesian pointInside = Cartesian.getMiddle(middle1, middle2);
+		if (this.contains(pointInside)) {
+			return Markup.Partial;
 		}
 		return Markup.Outside;
 	}
@@ -307,11 +318,20 @@ public class Trixel {
 		}
 		
 		int insideCornersCount = 0;
+		int onConstraintCount = 0;
+		boolean hasAbsolutelyOutside = false;
 		for (int i = 0; i < 3; i++) {
 			Cartesian corner = v[i];
-			if (halfspace.contains(corner)) {
+			if (halfspace.containsStrict(corner)) {
 				insideCornersCount++;
+			} else if (halfspace.containsLoose(corner)) {
+				onConstraintCount++;
+			} else {
+				hasAbsolutelyOutside = true;
 			}
+		}
+		if (!hasAbsolutelyOutside) {
+			insideCornersCount += onConstraintCount;
 		}
 		
 		if (insideCornersCount == 3) {
@@ -352,23 +372,41 @@ public class Trixel {
 	/**
 	 * Get the number of corners which are inside a Convex
 	 * that is, inside all Halfspaces of the Convex
+	 * Strategy when handling those corners on constraint is:
+	 * If there is any corner completely outside the convex,
+	 * then those on constraint will not be counted.
+	 * Else, count both inside and on constraint.
+	 * e.g. 1 inside and 2 on constraint, return 3
+	 * 0 inside, 2 on constraint, 1 outside, return 0
 	 * @param convex
 	 * @return int: 0, 1, 2 or 3
 	 */
 	protected int numOfInsideCorners(Convex convex) {
 		int insideCornersCount = 0;
+		int onConstraintCount = 0;
+		boolean hasAbsolutelyOutside = false;
 		for (int i = 0; i < 3; i++) {
 			Cartesian corner = v[i];
-			boolean insideAllHalfspaces = true;
+			boolean insideAllStrict = true;
+			boolean absolutelyOutside = false;
 			for (Halfspace halfspace : convex.halfspaces) {
-				if (!halfspace.contains(corner)) {
-					insideAllHalfspaces = false;
+				if (!halfspace.containsLoose(corner)) {
+					hasAbsolutelyOutside = true;
+					absolutelyOutside = true;
+					insideAllStrict = false;
 					break;
+				} else if (!halfspace.containsStrict(corner)) {
+					insideAllStrict = false;
 				}
 			}
-			if (insideAllHalfspaces) {
+			if (insideAllStrict) {
 				insideCornersCount++;
+			} else if (!absolutelyOutside) {
+				onConstraintCount++;
 			}
+		}
+		if (!hasAbsolutelyOutside) {
+			insideCornersCount += onConstraintCount;
 		}
 		return insideCornersCount;
 	}
@@ -390,7 +428,7 @@ public class Trixel {
 	 */
 	protected boolean contains(Cartesian p) {
 		Halfspace boundingCircle = getBoundingCircle();
-		if(!boundingCircle.contains(p)) {
+		if(!boundingCircle.containsLoose(p)) {
 			return false;
 		}
 		
@@ -407,13 +445,13 @@ public class Trixel {
 		Cartesian cross2 = pb.cross(pc);
 		Cartesian cross3 = pc.cross(pa);
 		
-		if (cross1.dot(cross2) < -Constants.epsilon) {
+		if (cross1.dot(cross2) < Constants.epsilon) {
 			return false;
 		}
-		if (cross2.dot(cross3) < -Constants.epsilon) {
+		if (cross2.dot(cross3) < Constants.epsilon) {
 			return false;
 		}
-		if (cross3.dot(cross1) < -Constants.epsilon) {
+		if (cross3.dot(cross1) < Constants.epsilon) {
 			return false;
 		}
 		return true;
