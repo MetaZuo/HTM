@@ -59,11 +59,22 @@ public class Halfspace {
 	
 	/**
 	 * Test whether a point in inside the Halfspace
+	 * On constraint will be judged false
 	 * @param p Cartesian point to test
 	 * @return true if inside
 	 */
-	public boolean contains(Cartesian p) {
+	public boolean containsStrict(Cartesian p) {
 		 return (vector.dot(p) > distance + Constants.epsilon);
+	}
+	
+	/**
+	 * Test whether a point in inside the Halfspace
+	 * On constraint will be judged true
+	 * @param p Cartesian point to test
+	 * @return true if inside
+	 */
+	public boolean containsLoose(Cartesian p) {
+		 return (vector.dot(p) > distance - Constants.epsilon);
 	}
 	
 	/**

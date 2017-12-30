@@ -34,7 +34,7 @@ public class Cover {
 	public Cover(Convex convex, int maxLevel) {
 		this.convex = convex;
 		this.maxLevel = maxLevel;
-		init();
+		alreadyRun = false;
 	}
 	
 	private void init() {
@@ -43,7 +43,7 @@ public class Cover {
 		stackOfPartialLists.push(new ArrayList<Trixel>());
 		queue = new LinkedList<Trixel>();
 		currentLevel = 0;
-		previousLevel = 1;
+		previousLevel = -1;
 		
 		HTM htm = HTM.getInstance();
 		
@@ -65,6 +65,7 @@ public class Cover {
 	 * Call this method before calling getTrixels(), getRanges(), etc.
 	 */
 	public void run() {
+		init();
 		halt = false;
 		if (convex == null) {
 			return;
@@ -106,6 +107,7 @@ public class Cover {
 					break;
 				case Partial:
 					stackOfPartialLists.peek().add(t);
+					break;
 				default:
 					terminal = true;
 				}
@@ -188,7 +190,8 @@ public class Cover {
 			System.out.println("Illegal arguments!");
 			return;
 		}
-		Cover cover = new Cover(convex, 3);
+		System.out.println(convex.toString());
+		Cover cover = new Cover(convex, 2);
 		cover.run();
 		List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
 		System.out.println("Trixels in the coverage:");
