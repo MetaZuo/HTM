@@ -105,6 +105,21 @@ public class Trixel {
 			}
 		}
 		
+		// If any vertex of convex inside Trixel then Partial
+		for (Cartesian vertex : convex.vertices) {
+			if (this.contains(vertex)) {
+				return Markup.Partial;
+			}
+		}
+		
+		// If any middle point of edge inside convex then Partial
+		for (int i = 0; i < 3; i++) {
+			Cartesian middle = Cartesian.getMiddle(v[i], v[(i + 1) % 3]);
+			if (convex.containsStrict(middle)) {
+				return Markup.Partial;
+			}
+		}
+		
 		// The smallest Halfspace is put at first when constructing convex
 		for (Halfspace halfspace : convex.halfspaces) {
 			// Are there any intersection between
@@ -426,7 +441,7 @@ public class Trixel {
 	 * @param p
 	 * @return true if p in Trixel
 	 */
-	protected boolean contains(Cartesian p) {
+	public boolean contains(Cartesian p) {
 		Halfspace boundingCircle = getBoundingCircle();
 		if(!boundingCircle.containsLoose(p)) {
 			return false;
