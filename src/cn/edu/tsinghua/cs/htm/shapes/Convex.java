@@ -71,6 +71,24 @@ public class Convex {
 		vertices.clear();
 	}
 	
+	public boolean containsStrict(Cartesian point) {
+		for (Halfspace halfspace : halfspaces) {
+			if (!halfspace.containsStrict(point)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean containsLoose(Cartesian point) {
+		for (Halfspace halfspace : halfspaces) {
+			if (!halfspace.containsLoose(point)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public Sign getSign() {
 		Sign sign = Sign.Zero;
 		for (Halfspace halfspace : halfspaces) {
