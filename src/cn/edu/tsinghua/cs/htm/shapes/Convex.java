@@ -21,10 +21,10 @@ public class Convex {
 	}
 	
 	/**
-	 * Input vertices in counter-clockwise order
+	 * Input vertices in clockwise order
 	 * Two neighboring vertices will be connected by a great circle arc
 	 * Thus we will build a zero-signed convex
-	 * @param vertices in counter-clockwise order
+	 * @param vertices in clockwise order
 	 */
 	public void buildByVertices(Collection<? extends Cartesian> vertices) {
 		if (vertices != null) {
@@ -35,12 +35,12 @@ public class Convex {
 				Cartesian prev = first;
 				while (iter.hasNext()) {
 					Cartesian temp = iter.next();
-					Cartesian v = prev.cross(temp);
+					Cartesian v = temp.cross(prev);
 					Halfspace halfspace = new Halfspace(v, 0);
 					halfspaces.add(halfspace);
 					prev = temp;
 				}
-				Cartesian v = prev.cross(first);
+				Cartesian v = first.cross(prev);
 				Halfspace halfspace = new Halfspace(v, 0);
 				halfspaces.add(halfspace);
 				
