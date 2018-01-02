@@ -10,6 +10,12 @@ import cn.edu.tsinghua.cs.htm.utils.HTMRanges;
 import cn.edu.tsinghua.cs.htm.utils.Markup;
 import cn.edu.tsinghua.cs.htm.utils.Pair;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 /**
  * Cover a Convex with Trixels
  * @author Haojia Zuo
@@ -185,19 +191,36 @@ public class Cover {
 	}
 	
 	public static void main(String[] args) {
-		Convex convex = Convex.parseVertices(args);
-		if (convex == null) {
-			System.out.println("Illegal arguments!");
-			return;
-		}
-		System.out.println(convex.toString());
-		Cover cover = new Cover(convex, 2);
-		cover.run();
-		List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
-		System.out.println("Trixels in the coverage:");
-		for (Pair<HTMid, HTMid> pair : pairs) {
-			System.out.println("[" + pair.a.toString() + ", " +
-								pair.b.toString() + "]");
+		Options options = new Options();
+		options.addOption("l", false, "HTMid pairs in long int form");
+		CommandLineParser parser = new DefaultParser();
+		try {
+			CommandLine cmd = parser.parse(options, args);
+			String[] vertices = cmd.getArgs();
+			Convex convex = Convex.parseVertices(vertices);
+			if (convex == null) {
+				System.out.println("Illegal arguments!");
+				return;
+			}
+			System.out.println(convex.toString());
+			Cover cover = new Cover(convex, 2);
+			cover.run();
+			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
+			System.out.println("Trixels in the coverage:");
+			
+			if (cmd.hasOption("l")) {
+				for (Pair<HTMid, HTMid> pair : pairs) {
+					System.out.println("[" + pair.a.getId() + ", " +
+										pair.b.getId() + "]");
+				}
+			} else {
+				for (Pair<HTMid, HTMid> pair : pairs) {
+					System.out.println("[" + pair.a.toString() + ", " +
+										pair.b.toString() + "]");
+				}
+			}
+		} catch (ParseException e) {
+			System.out.println("Argument error!");
 		}
 	}
 	
