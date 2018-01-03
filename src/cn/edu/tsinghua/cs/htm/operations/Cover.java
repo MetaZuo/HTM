@@ -193,7 +193,9 @@ public class Cover {
 	public static void main(String[] args) {
 		Options options = new Options();
 		options.addOption("l", false, "HTMid pairs in long int form");
+		options.addOption("d", true, "maximum HTMid depth");
 		CommandLineParser parser = new DefaultParser();
+		
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			String[] vertices = cmd.getArgs();
@@ -202,8 +204,17 @@ public class Cover {
 				System.out.println("Illegal arguments!");
 				return;
 			}
+			
 			System.out.println(convex.toString());
-			Cover cover = new Cover(convex, 2);
+			
+			if (!cmd.hasOption("d")) {
+				System.out.println("Must specify depth: -d [num]");
+				return;
+			}
+			
+			int depth = Integer.valueOf(cmd.getOptionValue("d"));
+			
+			Cover cover = new Cover(convex, depth);
 			cover.run();
 			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
 			System.out.println("Trixels in the coverage:");
