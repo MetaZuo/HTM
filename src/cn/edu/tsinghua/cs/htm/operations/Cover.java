@@ -194,12 +194,13 @@ public class Cover {
 		Options options = new Options();
 		options.addOption("l", false, "HTMid pairs in long int form");
 		options.addOption("d", true, "maximum HTMid depth");
+		options.addOption("latlon", false, "input points as latitude, longitude");
 		CommandLineParser parser = new DefaultParser();
 		
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			String[] vertices = cmd.getArgs();
-			Convex convex = Convex.parseVertices(vertices);
+			Convex convex = Convex.parseVertices(vertices, cmd.hasOption("latlon"));
 			if (convex == null) {
 				System.out.println("Illegal arguments!");
 				return;
