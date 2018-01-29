@@ -2,6 +2,7 @@ package cn.edu.tsinghua.cs.htm.shapes;
 
 import java.util.*;
 
+import cn.edu.tsinghua.cs.htm.utils.Latlon2Cartesian;
 import cn.edu.tsinghua.cs.htm.utils.Sign;
 
 /**
@@ -141,22 +142,36 @@ public class Convex {
 		return str;
 	}
 	
-	public static Convex parseVertices(String[] args) {
+	public static Convex parseVertices(String[] args, boolean latlon) {
 		Convex convex = new Convex();
 		if (args.length < 3) {
 			return null;
 		}
 		List<Cartesian> vertices = new LinkedList<Cartesian>();
-		for (String arg : args) {
-			String[] xyzStr = arg.split(",");
-			if (xyzStr.length != 3) {
-				return null;
+		if (!latlon) {
+			for (String arg : args) {
+				String[] xyzStr = arg.split(",");
+				if (xyzStr.length != 3) {
+					return null;
+				}
+				double[] xyzDouble = new double[3];
+				for (int i = 0; i < 3; i++) {
+					xyzDouble[i] = Double.parseDouble(xyzStr[i]);
+				}
+				vertices.add(new Cartesian(xyzDouble[0], xyzDouble[1], xyzDouble[2]));
 			}
-			double[] xyzDouble = new double[3];
-			for (int i = 0; i < 3; i++) {
-				xyzDouble[i] = Double.parseDouble(xyzStr[i]);
+		} else {
+			for (String arg : args) {
+				String[] latlonStr = arg.split(",");
+				if (latlonStr.length != 2) {
+					return null;
+				}
+				double latitude, longitude;
+				latitude = Double.parseDouble(latlonStr[0]);
+				longitude = Double.parseDouble(latlonStr[1]);
+				Cartesian point = Latlon2Cartesian.parse(latitude, longitude);
+				vertices.add(point);
 			}
-			vertices.add(new Cartesian(xyzDouble[0], xyzDouble[1], xyzDouble[2]));
 		}
 		convex.buildByVertices(vertices);
 		return convex;
