@@ -61,14 +61,23 @@ public class HTM {
 			List<Trixel> children = trixel.expand();
 			boolean found = false;
 			for (Trixel child : children) {
-				if (child.containsLoose(p)) {
+				if (child.containsStrict(p)) {
 					trixel = child;
 					found = true;
 					break;
 				}
 			}
 			if (!found) {
-				return new HTMid(0);
+				for (Trixel child : children) {
+					if (child.containsLoose(p)) {
+						trixel = child;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					return new HTMid(0);
+				}
 			}
 		}
 		

@@ -233,6 +233,7 @@ public class Cover {
 			}
 		} catch (ParseException e) {
 			System.out.println("Argument error!");
+			e.printStackTrace();
 		}
 	}
 	
