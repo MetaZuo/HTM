@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.cs.htm;
 
+import java.util.List;
+
 import cn.edu.tsinghua.cs.htm.shapes.Cartesian;
 import cn.edu.tsinghua.cs.htm.shapes.Trixel;
 import cn.edu.tsinghua.cs.htm.utils.HTMid;
@@ -46,6 +48,51 @@ public class HTM {
 	
 	public Trixel getTopTrixel(int i) {
 		return topTrixels[i];
+	}
+	
+	public HTMid Cartesian2HTMid(Cartesian p, int depth) {
+		HTMid topID = getTopHTMid(p);
+		if (topID.getId() < 8) {
+			return new HTMid(0);
+		}
+		
+		Trixel trixel = getTopTrixel((int)(topID.getId() - 8));
+		while (depth-- > 0) {
+			List<Trixel> children = trixel.expand();
+			boolean found = false;
+			for (Trixel child : children) {
+				if (child.containsLoose(p)) {
+					trixel = child;
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return new HTMid(0);
+			}
+		}
+		
+		return trixel.getHTMid();
+	}
+	
+	public HTMid getTopHTMid(Cartesian p) {
+		double[] xyz = p.get();
+		double x = xyz[0];
+		double y = xyz[1];
+		double z = xyz[2];
+		HTMid baseID = new HTMid(0);
+		if (x > 0 && y >= 0) {
+			baseID = (z >= 0) ? new HTMid("N3") : new HTMid("S0");
+		} else if (x <= 0 && y > 0) {
+			baseID = (z >= 0) ? new HTMid("N2") : new HTMid("S1");
+		} else if (x < 0 && y <= 0) {
+			baseID = (z >= 0) ? new HTMid("N1") : new HTMid("S2");
+		} else if (x >= 0 && y < 0) {
+			baseID = (z >= 0) ? new HTMid("N0") : new HTMid("S3");
+		} else {
+			baseID = (z >= 0) ? new HTMid("N3") : new HTMid("S0");
+		}
+		return baseID;
 	}
 	
 }

@@ -107,7 +107,7 @@ public class Trixel {
 		
 		// If any vertex of convex inside Trixel then Partial
 		for (Cartesian vertex : convex.vertices) {
-			if (this.contains(vertex)) {
+			if (this.containsStrict(vertex)) {
 				return Markup.Partial;
 			}
 		}
@@ -200,7 +200,7 @@ public class Trixel {
 					Cartesian middle1 = Cartesian.getMiddle(vertex0, vertex1);
 					Cartesian middle2 = Cartesian.getMiddle(vertex1, vertex2);
 					Cartesian pointInside = Cartesian.getMiddle(middle1, middle2);
-					if (this.contains(pointInside)) {
+					if (this.containsStrict(pointInside)) {
 						return Markup.Partial;
 					}
 					// not containing, then Outside
@@ -222,7 +222,7 @@ public class Trixel {
 		Cartesian middle1 = Cartesian.getMiddle(vertex0, vertex1);
 		Cartesian middle2 = Cartesian.getMiddle(vertex1, vertex2);
 		Cartesian pointInside = Cartesian.getMiddle(middle1, middle2);
-		if (this.contains(pointInside)) {
+		if (this.containsStrict(pointInside)) {
 			return Markup.Partial;
 		}
 		return Markup.Outside;
@@ -244,7 +244,7 @@ public class Trixel {
 			// Still have to judge if (part of) hole in Trixel
 			// If any Halfspace's center is inside Trixel, then Partial
 			for (Halfspace halfspace : convex.halfspaces) {
-				if (this.contains(halfspace.vector)) {
+				if (this.containsStrict(halfspace.vector)) {
 					return Markup.Partial;
 				}
 			}
@@ -377,7 +377,7 @@ public class Trixel {
 		
 		// Judge if Halfspace in Trixel
 		// by judging if Halfspace's center in Trixel
-		if (this.contains(halfspace.vector)) {
+		if (this.containsStrict(halfspace.vector)) {
 			return Markup.Partial;
 		}
 		
@@ -438,10 +438,11 @@ public class Trixel {
 	
 	/**
 	 * Judge if point p in the Trixel
+	 * On edge case will be judged false
 	 * @param p
 	 * @return true if p in Trixel
 	 */
-	public boolean contains(Cartesian p) {
+	public boolean containsStrict(Cartesian p) {
 		Halfspace boundingCircle = getBoundingCircle();
 		if(!boundingCircle.containsLoose(p)) {
 			return false;
@@ -467,6 +468,43 @@ public class Trixel {
 			return false;
 		}
 		if (cross3.dot(cross1) < Constants.epsilon) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Judge if point p in the Trixel
+	 * On edge case will be judged true
+	 * @param p
+	 * @return true if p in Trixel
+	 */
+	public boolean containsLoose(Cartesian p) {
+		Halfspace boundingCircle = getBoundingCircle();
+		if(!boundingCircle.containsLoose(p)) {
+			return false;
+		}
+		
+		// Get the intersection point
+		// of vector p and the Trixel's cutting plane
+		double lambda = boundingCircle.distance / (p.dot(boundingCircle.vector));
+		Cartesian inPlane = p.multiply(lambda);
+		
+		// Then it's judging if point in triangular in 2D
+		Cartesian pa = v[0].sub(inPlane);
+		Cartesian pb = v[1].sub(inPlane);
+		Cartesian pc = v[2].sub(inPlane);
+		Cartesian cross1 = pa.cross(pb);
+		Cartesian cross2 = pb.cross(pc);
+		Cartesian cross3 = pc.cross(pa);
+		
+		if (cross1.dot(cross2) < -Constants.epsilon) {
+			return false;
+		}
+		if (cross2.dot(cross3) < -Constants.epsilon) {
+			return false;
+		}
+		if (cross3.dot(cross1) < -Constants.epsilon) {
 			return false;
 		}
 		return true;
