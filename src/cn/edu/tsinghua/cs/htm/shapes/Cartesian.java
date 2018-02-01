@@ -25,6 +25,14 @@ public class Cartesian {
 		this.z = that.z;
 	}
 	
+	public double[] get() {
+		double[] xyz = new double[3];
+		xyz[0] = x;
+		xyz[1] = y;
+		xyz[2] = z;
+		return xyz;
+	}
+	
 	public double dot(Cartesian that) {
 		return (x * that.x + y * that.y + z * that.z);
 	}
