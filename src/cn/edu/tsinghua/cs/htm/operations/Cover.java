@@ -1,5 +1,9 @@
 package cn.edu.tsinghua.cs.htm.operations;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 import cn.edu.tsinghua.cs.htm.HTM;
@@ -195,6 +199,7 @@ public class Cover {
 		options.addOption("l", false, "HTMid pairs in long int form");
 		options.addOption("d", true, "maximum HTMid depth");
 		options.addOption("latlon", false, "input points as latitude, longitude");
+		options.addOption("file", true, "output file name");
 		CommandLineParser parser = new DefaultParser();
 		
 		try {
@@ -206,8 +211,6 @@ public class Cover {
 				return;
 			}
 			
-			System.out.println(convex.toString());
-			
 			if (!cmd.hasOption("d")) {
 				System.out.println("Must specify depth: -d [num]");
 				return;
@@ -218,21 +221,52 @@ public class Cover {
 			Cover cover = new Cover(convex, depth);
 			cover.run();
 			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
-			System.out.println("Trixels in the coverage:");
+			
+			BufferedWriter bw = null;
+			
+			if (cmd.hasOption("file")) {
+				String filename = cmd.getOptionValue("file");
+				File file = new File(filename);
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				bw = new BufferedWriter(new FileWriter(file));
+			}
 			
 			if (cmd.hasOption("l")) {
 				for (Pair<HTMid, HTMid> pair : pairs) {
-					System.out.println("[" + pair.a.getId() + ", " +
-										pair.b.getId() + "]");
+					if (cmd.hasOption("file")) {
+						bw.write(pair.a.getId() + ", " +
+										pair.b.getId());
+						bw.newLine();
+					} else {
+						System.out.println(pair.a.getId() + ", " +
+										pair.b.getId());
+					}
 				}
 			} else {
 				for (Pair<HTMid, HTMid> pair : pairs) {
-					System.out.println("[" + pair.a.toString() + ", " +
-										pair.b.toString() + "]");
+					if (cmd.hasOption("file")) {
+						bw.write(pair.a.toString() + ", " +
+										pair.b.toString());
+						bw.newLine();
+					} else {
+						System.out.println(pair.a.toString() + ", " +
+										pair.b.toString());
+					}
 				}
 			}
+			
+			if (cmd.hasOption("file")) {
+				bw.flush();
+				bw.close();
+			}
+			
 		} catch (ParseException e) {
 			System.out.println("Argument error!");
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("File output error!");
 			e.printStackTrace();
 		}
 	}

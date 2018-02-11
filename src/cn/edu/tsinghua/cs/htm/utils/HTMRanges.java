@@ -1,5 +1,9 @@
 package cn.edu.tsinghua.cs.htm.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 import cn.edu.tsinghua.cs.htm.shapes.Trixel;
@@ -27,6 +31,15 @@ public class HTMRanges {
 		this.level = level;
 	}
 	
+	public HTMRanges(List<Pair<HTMid, HTMid> > pairList) {
+		if (pairList != null) {
+			this.pairList.addAll(pairList);
+			sort();
+			compact();
+			level = this.pairList.get(0).a.getLevel();
+		}
+	}
+	
 	public HTMRanges(List<Trixel> trixelList, int level) {
 		this.level = level;
 		if (trixelList != null) {
@@ -40,10 +53,71 @@ public class HTMRanges {
 		}
 	}
 	
+	public static HTMRanges fromFile(String filename) throws IOException {
+		File file = new File(filename);
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		
+		List<Pair<HTMid, HTMid> > pairList = new ArrayList<Pair<HTMid, HTMid> >();
+		
+		String line = "";
+		while ((line = br.readLine()) != null) {
+			String[] lbhb = line.split(",");
+			lbhb[0] = lbhb[0].trim();
+			lbhb[1] = lbhb[1].trim();
+			
+			HTMid lb, hb;
+			if (lbhb[0].charAt(0) != 'N' && lbhb[0].charAt(0) != 'S') {
+				lb = new HTMid(Long.parseLong(lbhb[0]));
+			} else {
+				lb = new HTMid(lbhb[0]);
+			}
+			if (lbhb[1].charAt(0) != 'N' && lbhb[1].charAt(0) != 'S') {
+				hb = new HTMid(Long.parseLong(lbhb[1]));
+			} else {
+				hb = new HTMid(lbhb[1]);
+			}
+			pairList.add(new Pair<HTMid, HTMid>(lb, hb));
+		}
+		
+		br.close();
+		return new HTMRanges(pairList);
+	}
+	
 	public List<Pair<HTMid, HTMid> > getPairList() {
 		List<Pair<HTMid, HTMid> > duplicate = new ArrayList<Pair<HTMid, HTMid> >();
 		duplicate.addAll(pairList);
 		return duplicate;
+	}
+	
+	/**
+	 * Judge if Trixels represented by HTMRanges contain a certain Trixel  
+	 * @param htmId HTMid of the Trixel to judge
+	 * @return
+	 */
+	public boolean contains(HTMid htmId) {
+		int thatLevel = htmId.getLevel();
+		long hid = htmId.getId();
+		if (level <= thatLevel) {
+			for (Pair<HTMid, HTMid> pair : pairList) {
+				long lb = pair.a.extend(thatLevel).a.getId();
+				long hb = pair.b.extend(thatLevel).b.getId();
+				if (lb <= hid && hid <= hb) {
+					return true;
+				}
+			}
+		} else if (level > thatLevel) {
+			Pair<HTMid, HTMid> thatPair = htmId.extend(level);
+			for (Pair<HTMid, HTMid> pair : pairList) {
+				long lb = pair.a.extend(thatLevel).a.getId();
+				long hb = pair.b.extend(thatLevel).b.getId();
+				long thatLb = thatPair.a.getId();
+				long thatHb = thatPair.b.getId();
+				if (lb <= thatLb && thatHb <= hb) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/**
