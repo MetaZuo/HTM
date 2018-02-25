@@ -17,6 +17,7 @@ import cn.edu.tsinghua.cs.htm.utils.Pair;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -200,11 +201,18 @@ public class Cover {
 		options.addOption("d", true, "maximum HTMid depth");
 		options.addOption("latlon", false, "input points as latitude, longitude");
 		options.addOption("file", true, "output file name");
+		
+		Option option = new Option("points", true,
+				"vertices of query range in clockwise order");
+		option.setRequired(true);
+		option.setArgs(Option.UNLIMITED_VALUES);
+		options.addOption(option);
+		
 		CommandLineParser parser = new DefaultParser();
 		
 		try {
 			CommandLine cmd = parser.parse(options, args);
-			String[] vertices = cmd.getArgs();
+			String[] vertices = cmd.getOptionValues("points");
 			Convex convex = Convex.parseVertices(vertices, cmd.hasOption("latlon"));
 			if (convex == null) {
 				System.out.println("Illegal arguments!");
@@ -260,6 +268,7 @@ public class Cover {
 			if (cmd.hasOption("file")) {
 				bw.flush();
 				bw.close();
+				System.out.println("ranges saved to " + cmd.getOptionValue("file"));
 			}
 			
 		} catch (ParseException e) {
