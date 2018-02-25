@@ -16,6 +16,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -49,12 +50,7 @@
     </target>
     <target name="Main (3)">
         <java classname="cn.edu.tsinghua.cs.htm.Main" failonerror="true" fork="yes">
-            <arg line="Cover 0.6,0.8,0 0,0,-1 0.6,-0.8,0 0,0,1 -l -d 3"/>
-            <classpath refid="HTM.classpath"/>
-        </java>
-    </target>
-    <target name="Cover">
-        <java classname="cn.edu.tsinghua.cs.htm.operations.Cover" failonerror="true" fork="yes">
+            <arg line="Cover -latlon -d 10 45,100 45,120 0,120 0,100 -l -file ranges.txt"/>
             <classpath refid="HTM.classpath"/>
         </java>
     </target>
