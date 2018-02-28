@@ -64,6 +64,11 @@ public class Cartesian {
 		double len = length();
 		return new Cartesian(x / len, y / len, z / len);
 	}
+
+	public Cartesian scaleTo(int scale) {
+	    double len = length();
+	    return new Cartesian(x * scale / len, y * scale / len, z * scale / len);
+    }
 	
 	public static Cartesian getMiddle(Cartesian p1, Cartesian p2) {
 		double x = (p1.x + p2.x) / 2;

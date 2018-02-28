@@ -4,6 +4,7 @@ import java.util.List;
 
 import cn.edu.tsinghua.cs.htm.shapes.Cartesian;
 import cn.edu.tsinghua.cs.htm.shapes.Trixel;
+import cn.edu.tsinghua.cs.htm.utils.Constants;
 import cn.edu.tsinghua.cs.htm.utils.HTMid;
 
 /**
@@ -21,12 +22,12 @@ public class HTM {
 	
 	private HTM() {
 		origPoints = new Cartesian[6];
-		origPoints[0] = new Cartesian(0.0, 0.0, 1.0);
-		origPoints[1] = new Cartesian(1.0, 0.0, 0.0);
-		origPoints[2] = new Cartesian(0.0, 1.0, 0.0);
-		origPoints[3] = new Cartesian(-1.0, 0.0, 0.0);
-		origPoints[4] = new Cartesian(0.0, -1.0, 0.0);
-		origPoints[5] = new Cartesian(0.0, 0.0, -1.0);
+		origPoints[0] = new Cartesian(0.0, 0.0, 1.0 * Constants.scale);
+		origPoints[1] = new Cartesian(1.0 * Constants.scale, 0.0, 0.0);
+		origPoints[2] = new Cartesian(0.0, 1.0 * Constants.scale, 0.0);
+		origPoints[3] = new Cartesian(-1.0 * Constants.scale, 0.0, 0.0);
+		origPoints[4] = new Cartesian(0.0, -1.0 * Constants.scale, 0.0);
+		origPoints[5] = new Cartesian(0.0, 0.0, -1.0 * Constants.scale);
 		
 		topTrixels = new Trixel[8];
 		topTrixels[0] = new Trixel(origPoints[1], origPoints[5], origPoints[2], new HTMid("S0"));
@@ -89,7 +90,7 @@ public class HTM {
 		double x = xyz[0];
 		double y = xyz[1];
 		double z = xyz[2];
-		HTMid baseID = new HTMid(0);
+		HTMid baseID;
 		if (x > 0 && y >= 0) {
 			baseID = (z >= 0) ? new HTMid("N3") : new HTMid("S0");
 		} else if (x <= 0 && y > 0) {

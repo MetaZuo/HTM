@@ -12,4 +12,6 @@ public class Constants {
 	 */
 	public static final double epsilon = 1e-15;
 
+	public static final int scale = 100000;
+
 }

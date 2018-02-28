@@ -17,7 +17,7 @@ public class Halfspace {
 	double distance;
 	
 	public Halfspace(Cartesian vector, double distance) {
-		this.vector = vector.normalize();
+		this.vector = vector;
 		this.distance = distance;
 	}
 	
@@ -38,9 +38,9 @@ public class Halfspace {
 	 * @return true if exclusive
 	 */
 	public boolean exclusive(Halfspace that) {
-		double halfAngularThis = Math.acos(distance);
-		double halfAngularThat = Math.acos(that.distance);
-		double normsRelative = Math.acos(vector.dot(that.vector));
+		double halfAngularThis = Math.acos(distance / Constants.scale);
+		double halfAngularThat = Math.acos(that.distance / Constants.scale);
+		double normsRelative = Math.acos(vector.dot(that.vector) / (Constants.scale * Constants.scale));
 		return (normsRelative >= halfAngularThis + halfAngularThat);
 	}
 	
@@ -50,9 +50,9 @@ public class Halfspace {
 	 * @return true if this contains that
 	 */
 	public boolean contains(Halfspace that) {
-		double halfAngularThis = Math.acos(distance);
-		double halfAngularThat = Math.acos(that.distance);
-		double normsRelative = Math.acos(vector.dot(that.vector));
+		double halfAngularThis = Math.acos(distance / Constants.scale);
+		double halfAngularThat = Math.acos(that.distance / Constants.scale);
+		double normsRelative = Math.acos(vector.dot(that.vector) / (Constants.scale * Constants.scale));
 		
 		return (halfAngularThis - halfAngularThat >= normsRelative);
 	}
@@ -94,8 +94,8 @@ public class Halfspace {
 	
 	@Override
 	public String toString() {
-		String str = "Halfspace: {" + vector.toString() + "; "
-					 + String.format("%.3f}", distance);
+		String str = "Halfspace: {" + vector.normalize().toString() + "; "
+					 + String.format("%.3f}", distance / Constants.scale);
 		return str;
 	}
 	
