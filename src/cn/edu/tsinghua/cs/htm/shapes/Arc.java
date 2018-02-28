@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.cs.htm.shapes;
 
-import cn.edu.tsinghua.cs.htm.shapes.Cartesian;
-import cn.edu.tsinghua.cs.htm.shapes.Halfspace;
 
 /**
  * Spherical arc

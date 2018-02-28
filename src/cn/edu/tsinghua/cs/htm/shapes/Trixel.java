@@ -431,8 +431,8 @@ public class Trixel {
 	 * @return bounding circle as Halfspace object
 	 */
 	protected Halfspace getBoundingCircle() {
-		Cartesian vb = v[1].sub(v[0]).cross(v[2].sub(v[1])).normalize();
-		double db = v[0].dot(vb);
+		Cartesian vb = v[1].sub(v[0]).cross(v[2].sub(v[1])).scaleTo(Constants.scale);
+		double db = v[0].dot(vb) / Constants.scale;
 		return new Halfspace(vb, db);
 	}
 	
@@ -450,7 +450,7 @@ public class Trixel {
 		
 		// Get the intersection point
 		// of vector p and the Trixel's cutting plane
-		double lambda = boundingCircle.distance / (p.dot(boundingCircle.vector));
+		double lambda = boundingCircle.distance / (p.dot(boundingCircle.vector) / Constants.scale);
 		Cartesian inPlane = p.multiply(lambda);
 		
 		// Then it's judging if point in triangular in 2D
@@ -487,7 +487,7 @@ public class Trixel {
 		
 		// Get the intersection point
 		// of vector p and the Trixel's cutting plane
-		double lambda = boundingCircle.distance / (p.dot(boundingCircle.vector));
+		double lambda = boundingCircle.distance / (p.dot(boundingCircle.vector) / Constants.scale);
 		Cartesian inPlane = p.multiply(lambda);
 		
 		// Then it's judging if point in triangular in 2D
