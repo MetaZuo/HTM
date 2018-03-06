@@ -84,8 +84,16 @@ public class ArcInterHS {
 	
 	private Cartesian rootToCartesian(double root) {
 		Cartesian intersection = arcVertex1
-				.multiply(1 + (uSquare * (1 - root) - 1) * root)
-				.add(arcVertex2.multiply(root * (1 + uSquare)));
+				.multiply(Constants.scale
+                        * (1 - root) * (1 + uSquare * root)
+                        / (1 + root * root * uSquare)
+                )
+				.add(arcVertex2
+                        .multiply(Constants.scale
+                                * root * (1 + uSquare)
+                                / (1 + root * root * uSquare)
+                        )
+                );
 		return intersection;
 	}
 
