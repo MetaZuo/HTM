@@ -130,7 +130,7 @@ public class Cover {
 		}
 	}
 	
-	public List<Pair<HTMid, HTMid> > getHTMidPairs() {
+	public List<Pair<HTMid, HTMid> > getHTMidPairs(int level) {
 		if (!alreadyRun) {
 			return null;
 		}
@@ -138,11 +138,11 @@ public class Cover {
 		if (trixelList == null) {
 			return null;
 		}
-		HTMRanges htmRanges = new HTMRanges(trixelList, maxLevel);
+		HTMRanges htmRanges = new HTMRanges(trixelList, level);
 		return htmRanges.getPairList();
 	}
 	
-	public List<Pair<HTMid, HTMid> > getHTMidPairs(Markup markup) {
+	public List<Pair<HTMid, HTMid> > getHTMidPairs(Markup markup, int level) {
 		if (!alreadyRun) {
 			return null;
 		}
@@ -150,7 +150,7 @@ public class Cover {
 		if (trixelList == null) {
 			return null;
 		}
-		HTMRanges htmRanges = new HTMRanges(trixelList, maxLevel);
+		HTMRanges htmRanges = new HTMRanges(trixelList, level);
 		return htmRanges.getPairList();
 	}
 	
@@ -228,7 +228,7 @@ public class Cover {
 			
 			Cover cover = new Cover(convex, depth);
 			cover.run();
-			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs();
+			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs(20);
 			
 			BufferedWriter bw = null;
 			
