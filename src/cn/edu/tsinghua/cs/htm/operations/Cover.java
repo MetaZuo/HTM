@@ -1,9 +1,6 @@
 package cn.edu.tsinghua.cs.htm.operations;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 import cn.edu.tsinghua.cs.htm.HTM;
@@ -194,6 +191,13 @@ public class Cover {
 		}
 		return result;
 	}
+
+	private static String[] getVerticesFromFile(String filePath) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filePath));
+        String line = br.readLine();
+        br.close();
+        return line.split("\\s+");
+    }
 	
 	public static void main(String[] args) {
 		Options options = new Options();
@@ -202,17 +206,26 @@ public class Cover {
 		options.addOption("latlon", false, "input points as latitude, longitude");
 		options.addOption("file", true, "output file name");
 		
-		Option option = new Option("points", true,
+		Option optionPoints = new Option("points", true,
 				"vertices of query range in clockwise order");
-		option.setRequired(true);
-		option.setArgs(Option.UNLIMITED_VALUES);
-		options.addOption(option);
+		optionPoints.setRequired(false);
+		optionPoints.setArgs(Option.UNLIMITED_VALUES);
+		options.addOption(optionPoints);
+
+		Option optionInFile = new Option("i", true, "input file name");
+		optionInFile.setRequired(false);
+		options.addOption(optionInFile);
 		
 		CommandLineParser parser = new DefaultParser();
 		
 		try {
 			CommandLine cmd = parser.parse(options, args);
-			String[] vertices = cmd.getOptionValues("points");
+            String[] vertices = null;
+			if (cmd.hasOption("points")) {
+                vertices = cmd.getOptionValues("points");
+            } else if (cmd.hasOption("i")) {
+                vertices = getVerticesFromFile(cmd.getOptionValue("i"));
+            }
 			Convex convex = Convex.parseVertices(vertices, cmd.hasOption("latlon"));
 			if (convex == null) {
 				System.out.println("Illegal arguments!");
@@ -228,7 +241,7 @@ public class Cover {
 			
 			Cover cover = new Cover(convex, depth);
 			cover.run();
-			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs(20);
+			List<Pair<HTMid, HTMid> > pairs = cover.getHTMidPairs(depth);
 			
 			BufferedWriter bw = null;
 			
@@ -242,14 +255,25 @@ public class Cover {
 			}
 			
 			if (cmd.hasOption("l")) {
+				int i = 0;
 				for (Pair<HTMid, HTMid> pair : pairs) {
+				    i++;
 					if (cmd.hasOption("file")) {
-						bw.write(pair.a.getId() + ", " +
+						bw.write(pair.a.getId() + "," +
 										pair.b.getId());
-						bw.newLine();
+						if (i < pairs.size()) {
+						    bw.write(";");
+                        } else {
+						    bw.newLine();
+                        }
 					} else {
-						System.out.println(pair.a.getId() + ", " +
+						System.out.print(pair.a.getId() + "," +
 										pair.b.getId());
+                        if (i < pairs.size()) {
+                            System.out.print(";");
+                        } else {
+                            System.out.println();
+                        }
 					}
 				}
 			} else {
@@ -275,7 +299,7 @@ public class Cover {
 			System.out.println("Argument error!");
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("File output error!");
+			System.out.println("File error!");
 			e.printStackTrace();
 		}
 	}
